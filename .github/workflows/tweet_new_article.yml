@@ -1,0 +1,36 @@
+name: 新記事をXに自動投稿
+
+on:
+  push:
+    branches: [main]
+    paths: ['*.html']
+  workflow_dispatch:
+    inputs:
+      filename:
+        description: '手動投稿するファイル名 (例: plan.html)'
+        required: false
+
+jobs:
+  post-tweet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests requests-oauthlib
+
+      - name: Post tweet
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          MANUAL_FILE: ${{ github.event.inputs.filename }}
+        run: python .github/scripts/post_tweet.py
